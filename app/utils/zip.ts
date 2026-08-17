@@ -10,13 +10,18 @@ export const ASSET_TYPES = [
   { value: 'monogram', label: 'Monogram' },
   { value: 'wordmark', label: 'Wordmark' },
   { value: 'app_icon_source', label: 'App Icon Source' },
+  { value: 'logo_3d', label: '3D Logo' },
+  { value: 'effect', label: 'Effect' },
+  { value: 'dark_version', label: 'Dark Version' },
+  { value: 'light_version', label: 'Light Version' },
   { value: 'custom', label: 'Custom' }
 ] as const
 
 const LABELS: Record<string, string> = {
   primary_logo: 'Primary_Logo', horizontal_logo: 'Horizontal_Logo', vertical_logo: 'Vertical_Logo',
   logo_mark: 'Logo_Mark', monogram: 'Monogram', wordmark: 'Wordmark',
-  app_icon_source: 'App_Icon_Source', custom: 'Custom'
+  app_icon_source: 'App_Icon_Source', logo_3d: '3D_Logo', effect: 'Effect',
+  dark_version: 'Dark_Version', light_version: 'Light_Version', custom: 'Custom'
 }
 
 export function typeLabel(type: string, customName?: string): string {
