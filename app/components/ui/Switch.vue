@@ -2,17 +2,18 @@
   <button
     type="button"
     role="switch"
-    :aria-checked="modelValue"
+    :aria-checked="modelValue ?? false"
     :class="[
-      'inline-flex items-center h-6 w-10 rounded-full transition-colors',
-      modelValue ? 'bg-primary' : 'bg-muted border border-border',
+      'flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40',
+      modelValue ? 'bg-primary' : 'bg-border',
     ]"
     @click="$emit('update:modelValue', !modelValue)"
   >
     <span
+      aria-hidden="true"
       :class="[
-        'block w-[18px] h-[18px] rounded-full bg-white shadow transition-transform',
-        modelValue ? 'translate-x-[21px]' : 'translate-x-[3px]',
+        'pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform duration-150',
+        modelValue ? 'translate-x-5' : 'translate-x-0',
       ]"
     />
   </button>
