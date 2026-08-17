@@ -1,20 +1,20 @@
 <template>
-  <div class="bg-card rounded-2xl border border-border/60 p-6 sm:p-8 shadow-sm space-y-5">
-    <div class="space-y-2">
-      <h2 class="text-3xl sm:text-4xl font-display font-medium tracking-tight">Brand <em class="italic">colors</em></h2>
-      <p class="text-muted-foreground">Add your brand colors. The app will generate logo versions in each color and use them as background options.</p>
+  <div class="crop-card bg-card rounded-[2px] border border-border p-6 sm:p-10 space-y-8">
+    <div class="space-y-3">
+      <h2 class="text-4xl sm:text-5xl font-display font-semibold tracking-tight leading-[1.05]">Brand <em class="italic font-medium">colors</em></h2>
+      <p class="text-sm text-muted-foreground max-w-md">Add your brand colors. The app will generate logo versions in each color and use them as background options.</p>
     </div>
 
     <div class="space-y-4">
       <div class="grid gap-4 sm:grid-cols-2">
-        <div class="flex items-start gap-3 rounded-xl border border-border/60 p-4">
+        <div class="flex items-start gap-3 rounded-[3px] border border-border p-4">
           <Switch :model-value="bwVersion" class="mt-0.5" @update:model-value="v => emit('update:bwVersion', v)" />
           <div class="space-y-1">
             <Label>Black &amp; White logo version</Label>
             <p class="text-xs text-muted-foreground">Generates black and white exports in SVG, PNG, JPG and WebP.</p>
           </div>
         </div>
-        <div class="flex items-start gap-3 rounded-xl border border-border/60 p-4">
+        <div class="flex items-start gap-3 rounded-[3px] border border-border p-4">
           <Switch :model-value="originalVersion" class="mt-0.5" @update:model-value="v => emit('update:originalVersion', v)" />
           <div class="space-y-1">
             <Label>Original (multicolor) logo</Label>
@@ -32,7 +32,7 @@
           max="50"
           step="1"
           :value="jpgMargin"
-          class="w-20 h-9 text-right font-mono rounded-xl border border-input bg-card px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring/40"
+          class="w-20 h-9 text-right font-mono rounded-[3px] border border-input bg-card px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring/40"
           @input="onMargin"
         />
         <span class="text-sm text-muted-foreground">%</span>

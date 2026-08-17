@@ -22,7 +22,7 @@ describe('eps compiler', () => {
     expect(out.startsWith('%!PS-Adobe-3.0 EPSF-3.0')).toBe(true)
     expect(out).toContain('%%BoundingBox: 0 0 200 100')
     expect(out).toContain('%%Title: (Acme Primary_Logo CMYK original)')
-    expect(out).toContain('%%Creator: Logo Asset Pack Generator')
+    expect(out).toContain('%%Creator: LogoKit by Khairinkamarizal')
     expect(out).toContain('0 100 translate 1 -1 scale')
     expect(out).toContain('closepath fill')
     expect(out).toContain('setcmykcolor')

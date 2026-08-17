@@ -1,28 +1,28 @@
 <template>
-  <div class="bg-card rounded-2xl border border-border/60 p-6 sm:p-8 shadow-sm space-y-5">
-    <div class="space-y-2">
-      <h2 class="text-3xl sm:text-4xl font-display font-medium tracking-tight">Upload logo <em class="italic">files</em></h2>
-      <p class="text-muted-foreground">Upload one or more logo source files. Each file becomes its own complete asset folder in the ZIP.</p>
+  <div class="crop-card bg-card rounded-[2px] border border-border p-6 sm:p-10 space-y-8">
+    <div class="space-y-3">
+      <h2 class="text-4xl sm:text-5xl font-display font-semibold tracking-tight leading-[1.05]">Upload logo <em class="italic font-medium">files</em></h2>
+      <p class="text-sm text-muted-foreground max-w-md">Upload one or more logo source files. Each file becomes its own complete asset folder in the ZIP.</p>
     </div>
     <div class="space-y-4">
       <div class="flex items-center gap-3">
-        <div class="text-xs font-medium tracking-widest text-muted-foreground">LOGO ASSETS</div>
-        <span class="bg-primary/10 text-primary rounded-full font-mono text-xs px-2.5 h-6 flex items-center">{{ assets.length }} files</span>
+        <div class="eyebrow flex-1">Logo Assets</div>
+        <span class="bg-secondary text-foreground rounded-[3px] font-mono text-xs px-2.5 h-6 flex items-center">{{ assets.length }} files</span>
       </div>
 
       <div
-        :class="['border-2 border-dashed rounded-xl p-8 text-center cursor-pointer hover:border-primary/50 transition-colors', dragging ? 'scale-[1.01] bg-primary/5 border-primary' : 'border-border']"
+        :class="['border-2 border-dashed rounded-[2px] p-8 text-center cursor-pointer hover:border-foreground/40 transition-colors', dragging ? 'scale-[1.01] bg-secondary border-foreground' : 'border-border']"
         @click="openPicker"
         @dragover.prevent="dragging = true"
         @dragleave.prevent="dragging = false"
         @drop.prevent="onDrop"
       >
-        <div class="w-12 h-12 rounded-2xl bg-primary/10 mx-auto flex items-center justify-center">
-          <Upload class="w-6 h-6 text-primary" />
+        <div class="w-12 h-12 rounded-[4px] bg-secondary mx-auto flex items-center justify-center">
+          <Upload class="w-6 h-6 text-foreground" />
         </div>
-        <div class="font-medium mt-3">{{ dragging ? 'Drop to add files' : 'Drop logo files here' }}</div>
+        <div class="font-display font-medium mt-3">{{ dragging ? 'Drop to add files' : 'Drop logo files here' }}</div>
         <div class="text-xs text-muted-foreground mt-1">or click to browse</div>
-        <span class="inline-block mt-3 text-[10px] font-mono bg-secondary rounded px-1.5 py-0.5">SVG</span>
+        <span class="inline-block mt-3 text-[10px] font-mono bg-secondary rounded-[2px] px-1.5 py-0.5 border border-border">SVG</span>
         <input ref="fileInput" type="file" multiple accept=".svg" class="hidden" @click.stop @change="onChange" />
       </div>
 

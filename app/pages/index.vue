@@ -7,7 +7,7 @@
           <button
             v-if="done"
             type="button"
-            class="inline-flex items-center justify-center h-8 px-3 text-xs gap-1.5 rounded-xl border border-primary/40 text-primary hover:bg-primary/10 transition-colors"
+            class="inline-flex items-center justify-center h-8 px-3 text-xs gap-1.5 rounded-[3px] border border-foreground/30 text-foreground hover:bg-secondary transition-colors"
             @click="onGenerate"
           >
             <Download class="w-3.5 h-3.5" /> Re-download

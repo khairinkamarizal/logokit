@@ -17,7 +17,8 @@ describe('generate step', () => {
   it('renders stats, panels, chips', () => {
     const w = mount(GenerateStep, { props: { cfg, tree: buildTreePreview(cfg), progress: null, isGenerating: false, done: false } })
     expect(w.text()).toContain('Ready to')
-    expect(w.text()).toContain('LOGO ASSETS')
+    expect(w.text()).toContain('Logo Assets')
+    expect(w.text()).toContain('Est. Files')
     expect(w.text()).toContain('Digital / RGB')
     expect(w.text()).toContain('Print / CMYK')
     expect(w.text()).toContain('Color Versions per Asset')

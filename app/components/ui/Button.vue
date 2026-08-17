@@ -18,10 +18,10 @@ const props = withDefaults(
 )
 
 const classes = computed(() => [
-  'inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40',
+  'inline-flex items-center justify-center gap-2 rounded-[4px] font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40',
   {
-    default: 'bg-primary text-primary-foreground hover:opacity-90',
-    outline: 'border border-border bg-card hover:bg-secondary',
+    default: 'bg-primary text-primary-foreground hover:bg-foreground/85',
+    outline: 'border border-border bg-card hover:border-foreground/40',
     ghost: 'hover:bg-secondary',
     destructive: 'bg-destructive text-white hover:opacity-90',
   }[props.variant],

@@ -1,20 +1,20 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: hsl(40 24% 96%);
-  --color-foreground: hsl(0 0% 12%);
+  --color-background: hsl(0 0% 96%);
+  --color-foreground: hsl(0 0% 9%);
   --color-card: hsl(0 0% 100%);
-  --color-card-foreground: hsl(0 0% 12%);
-  --color-primary: hsl(20 100% 66%);
-  --color-primary-foreground: hsl(0 0% 12%);
-  --color-secondary: hsl(40 16% 93%);
-  --color-muted: hsl(40 16% 93%);
+  --color-card-foreground: hsl(0 0% 9%);
+  --color-primary: hsl(0 0% 9%);
+  --color-primary-foreground: hsl(0 0% 100%);
+  --color-secondary: hsl(0 0% 93%);
+  --color-muted: hsl(0 0% 93%);
   --color-muted-foreground: hsl(0 0% 42%);
-  --color-border: hsl(40 14% 89%);
-  --color-input: hsl(40 14% 89%);
+  --color-border: hsl(0 0% 88%);
+  --color-input: hsl(0 0% 88%);
   --color-destructive: hsl(0 72% 51%);
-  --color-ring: hsl(20 100% 66%);
-  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-ring: hsl(0 0% 9%);
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
   --radius-xl2: .625rem;
 }
@@ -26,6 +26,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+::selection {
+  background: hsl(0 0% 9%);
+  color: hsl(0 0% 100%);
+}
+
 .bg-dots {
   background-image: radial-gradient(circle at center, rgba(26, 26, 26, .06) 1px, transparent 1px);
   background-size: 18px 18px;
@@ -35,4 +40,54 @@ body {
   background-size: 18px 18px;
   -webkit-mask-image: radial-gradient(ellipse 420px 360px at var(--mx, -9999px) var(--my, -9999px), #000 0%, rgba(0, 0, 0, .65) 38%, transparent 75%);
   mask-image: radial-gradient(ellipse 420px 360px at var(--mx, -9999px) var(--my, -9999px), #000 0%, rgba(0, 0, 0, .65) 38%, transparent 75%);
+}
+
+/* Print-production crop marks on the active step card */
+.crop-card {
+  position: relative;
+}
+.crop-card::before,
+.crop-card::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+}
+.crop-card::before {
+  top: -1px;
+  left: -1px;
+  border-top: 1.5px solid hsl(0 0% 9%);
+  border-left: 1.5px solid hsl(0 0% 9%);
+}
+.crop-card::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 1.5px solid hsl(0 0% 9%);
+  border-right: 1.5px solid hsl(0 0% 9%);
+}
+
+/* Section eyebrow: mono small-caps with em-dash rule */
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: hsl(0 0% 42%);
+}
+.eyebrow::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: hsl(0 0% 88%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
 }

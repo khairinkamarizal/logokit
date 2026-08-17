@@ -306,7 +306,7 @@ export function svgToEps(svgEl: SVGElement, opts: { cmyk?: { c: number; m: numbe
     '%!PS-Adobe-3.0 EPSF-3.0',
     `%%BoundingBox: 0 0 ${f3(W)} ${f3(H)}`,
     `%%Title: (${opts.title})`,
-    '%%Creator: Logo Asset Pack Generator',
+    '%%Creator: LogoKit by Khairinkamarizal',
     '%%LanguageLevel: 2',
     '%%EndComments',
     '%%Page: 1 1',
