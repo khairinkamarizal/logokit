@@ -1,7 +1,14 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest'
+import * as eps from '~/utils/eps'
 import { svgToEps } from '~/utils/eps'
 import { parseSvg } from '~/utils/svg'
+
+const opsOf = (d: string) =>
+  svgToEps(parseSvg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><path d="${d}" fill="#000"/></svg>`), { title: 't' })
+    .split('\n')
+    .filter(l => / (moveto|lineto|curveto)$/.test(l) || l === 'closepath fill')
+    .map(l => (l === 'closepath fill' ? 'closepath fill' : l.split(' ').pop()!))
 
 const SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100">
   <path d="M10 10 L190 10 L190 90 L10 90 Z" fill="#3B82F6"/>
@@ -32,5 +39,16 @@ describe('eps compiler', () => {
   it('skips defs and gradients', () => {
     const out = svgToEps(parseSvg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><defs><linearGradient id="g"><stop stop-color="#fff"/></linearGradient></defs><path d="M0 0h10v10z"/></svg>`), { title: 't' })
     expect(out).not.toContain('sh')
+  })
+  it('exports only svgToEps as public API', () => {
+    expect(Object.keys(eps).sort()).toEqual(['svgToEps'])
+  })
+  it('drawing command after Z reopens subpath with moveto from closepoint', () => {
+    const ops = opsOf('M0 0 L10 0 Z L20 20')
+    expect(ops).toEqual(['moveto', 'lineto', 'closepath fill', 'moveto', 'lineto', 'closepath fill'])
+  })
+  it('Z Z does not emit a second closepath fill', () => {
+    const out = svgToEps(parseSvg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><path d="M0 0 L10 0 Z Z" fill="#000"/></svg>`), { title: 't' })
+    expect(out.split('closepath fill').length - 1).toBe(1)
   })
 })

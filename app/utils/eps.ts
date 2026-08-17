@@ -107,7 +107,7 @@ function arcPoints(x1: number, y1: number, rx: number, ry: number, rotDeg: numbe
   return pts
 }
 
-export function pathOps(d: string): string[] {
+function pathOps(d: string): string[] {
   const out: string[] = []
   let pos = 0
   let cmd = ''
@@ -120,6 +120,7 @@ export function pathOps(d: string): string[] {
   let lastC: [number, number] | null = null
   let lastQ: [number, number] | null = null
   let subpathOpen = false
+  let hadSubpath = false
 
   const closeFill = () => {
     out.push('closepath fill')
@@ -127,6 +128,7 @@ export function pathOps(d: string): string[] {
   }
 
   const exec = () => {
+    if (!subpathOpen && hadSubpath && cmd !== 'M') out.push(`${f3(sx)} ${f3(sy)} moveto`)
     switch (cmd) {
       case 'M': {
         const x = rel ? cx + args[0] : args[0]
@@ -137,6 +139,8 @@ export function pathOps(d: string): string[] {
         cy = y
         sx = x
         sy = y
+        hadSubpath = true
+        subpathOpen = true
         lastC = null
         lastQ = null
         cmd = 'L'
@@ -258,7 +262,7 @@ export function pathOps(d: string): string[] {
       rel = cmd !== ch
       args = []
       if (cmd === 'Z') {
-        out.push('closepath fill')
+        if (subpathOpen) closeFill()
         subpathOpen = false
         cx = sx
         cy = sy
