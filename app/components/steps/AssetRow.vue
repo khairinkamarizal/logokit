@@ -43,7 +43,7 @@ import { GripVertical, X, File as FileIcon } from 'lucide-vue-next'
 import AppSelect from '~/components/ui/AppSelect.vue'
 import Button from '~/components/ui/Button.vue'
 import Input from '~/components/ui/Input.vue'
-import { ASSET_TYPES } from '~/utils/generator'
+import { ASSET_TYPES } from '~/utils/zip'
 import type { LogoAsset } from '~/utils/generator'
 
 const props = defineProps<{ asset: LogoAsset; index: number }>()

@@ -4,8 +4,6 @@ import { svgToEps } from './eps'
 import { buildZip, assetFolderNames, zipFileName, typeLabel } from './zip'
 import { slugify } from './color'
 
-export { ASSET_TYPES } from './zip'
-
 export interface LogoAsset { id: string; type: string; customName?: string; name: string; file?: File }
 export interface BrandColor { id: string; name: string; hex: string; cmyk: { c: number; m: number; y: number; k: number }; cmykManual: boolean; useForLogo: boolean; useAsBackground: boolean; digitalOnly: boolean; printOnly: boolean }
 export interface GeneratorConfig { brandName: string; assets: LogoAsset[]; colors: BrandColor[]; bwVersion: boolean; originalVersion: boolean; jpgMargin: number }
