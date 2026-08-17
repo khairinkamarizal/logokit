@@ -107,7 +107,7 @@ import Label from '~/components/ui/Label.vue'
 import Switch from '~/components/ui/Switch.vue'
 import ColorCard from '~/components/steps/ColorCard.vue'
 import CmykEditor from '~/components/steps/CmykEditor.vue'
-import { isValidHex, rgbToCmyk } from '~/utils/color'
+import { isValidHex, hexToRgb, rgbToCmyk } from '~/utils/color'
 import type { BrandColor } from '~/utils/generator'
 
 const props = defineProps<{
@@ -147,21 +147,14 @@ function onMargin(e: Event) {
   const v = Number.isFinite(raw) ? Math.min(50, Math.max(0, Math.round(raw))) : 0
   emit('update:jpgMargin', v)
 }
-
 function openAdd() {
   const seed = props.dominantSeed ?? '#3B82F6'
   newHex.value = seed
   newName.value = ''
   newManual.value = false
-  newCmyk.value = rgbToCmyk(...(Object.values({ ...hexRgb(seed) }) as [number, number, number]))
+  const { r, g, b } = hexToRgb(seed)
+  newCmyk.value = rgbToCmyk(r, g, b)
   showAdd.value = true
-}
-
-function hexRgb(hex: string): { r: number; g: number; b: number } {
-  let h = hex.replace('#', '').trim()
-  if (h.length === 3) h = h.split('').map(c => c + c).join('')
-  const n = parseInt(h, 16)
-  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 }
 }
 
 function closeAdd() {
@@ -169,8 +162,9 @@ function closeAdd() {
 }
 
 function confirmAdd() {
+  if (!isValidHex(newHex.value)) return
   const hex = normalizedHex(newHex.value)
-  const rgb = hexRgb(hex)
+  const rgb = hexToRgb(hex)
   const cmyk = newManual.value ? newCmyk.value : rgbToCmyk(rgb.r, rgb.g, rgb.b)
   const color: BrandColor = {
     id: `color_${Date.now()}`,

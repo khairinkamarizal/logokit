@@ -5,8 +5,8 @@
       :style="{ backgroundColor: color.hex, color: textColorOn(color.hex) }"
     >
       <div class="min-w-0">
-        <div class="font-medium truncate">{{ color.name || 'Unnamed' }}</div>
-        <div v-if="!color.name" class="italic">Unnamed</div>
+        <div v-if="color.name" class="font-medium truncate">{{ color.name }}</div>
+        <div v-else class="italic">Unnamed</div>
         <div class="font-mono text-xs uppercase">{{ color.hex }}</div>
       </div>
       <div class="flex items-center gap-1 shrink-0">
