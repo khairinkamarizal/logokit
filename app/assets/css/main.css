@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: hsl(40 24% 96%);
+  --color-foreground: hsl(0 0% 12%);
+  --color-card: hsl(0 0% 100%);
+  --color-card-foreground: hsl(0 0% 12%);
+  --color-primary: hsl(20 100% 66%);
+  --color-primary-foreground: hsl(0 0% 12%);
+  --color-secondary: hsl(40 16% 93%);
+  --color-muted: hsl(40 16% 93%);
+  --color-muted-foreground: hsl(0 0% 42%);
+  --color-border: hsl(40 14% 89%);
+  --color-input: hsl(40 14% 89%);
+  --color-destructive: hsl(0 72% 51%);
+  --color-ring: hsl(20 100% 66%);
+  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --radius-xl2: .625rem;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.bg-dots {
+  background-image: radial-gradient(circle at center, rgba(26, 26, 26, .06) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+.bg-dots-bright {
+  background-image: radial-gradient(circle at center, rgba(26, 26, 26, .22) 1px, transparent 1px);
+  background-size: 18px 18px;
+  -webkit-mask-image: radial-gradient(ellipse 420px 360px at var(--mx, -9999px) var(--my, -9999px), #000 0%, rgba(0, 0, 0, .65) 38%, transparent 75%);
+  mask-image: radial-gradient(ellipse 420px 360px at var(--mx, -9999px) var(--my, -9999px), #000 0%, rgba(0, 0, 0, .65) 38%, transparent 75%);
+}
