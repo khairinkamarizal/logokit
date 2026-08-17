@@ -4,9 +4,14 @@
       <div class="max-w-5xl w-full space-y-6">
         <div class="flex items-center justify-between gap-4 flex-wrap">
           <StepNav :step="step" :can-go-to="canGoTo" :done="done" @go="n => step = n" />
-          <Button v-if="done" variant="outline" @click="onGenerate">
-            <Download class="w-4 h-4" /> Re-download
-          </Button>
+          <button
+            v-if="done"
+            type="button"
+            class="inline-flex items-center justify-center h-8 px-3 text-xs gap-1.5 rounded-xl border border-primary/40 text-primary hover:bg-primary/10 transition-colors"
+            @click="onGenerate"
+          >
+            <Download class="w-3.5 h-3.5" /> Re-download
+          </button>
         </div>
         <ErrorBanner :errors="errors" />
         <Transition name="step" mode="out-in">
@@ -36,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, defineComponent, h } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { ArrowRight, Sparkles, Download, Loader2 } from 'lucide-vue-next'
 import Button from '~/components/ui/Button.vue'
 import StepNav from '~/components/stepper/StepNav.vue'
@@ -44,9 +49,12 @@ import SummarySidebar from '~/components/stepper/SummarySidebar.vue'
 import BrandStep from '~/components/steps/BrandStep.vue'
 import AssetsStep from '~/components/steps/AssetsStep.vue'
 import ColorsStep from '~/components/steps/ColorsStep.vue'
+import GenerateStep from '~/components/steps/GenerateStep.vue'
 import ErrorBanner from '~/components/ErrorBanner.vue'
 import { dominantColorFromSvg } from '~/utils/color'
-import type { LogoAsset, BrandColor, Progress } from '~/utils/generator'
+import { generateAssetPack, buildTreePreview } from '~/utils/generator'
+import { downloadBlob } from '~/utils/zip'
+import type { LogoAsset, BrandColor, Progress, GeneratorConfig } from '~/utils/generator'
 
 const step = ref(0)
 const brandName = ref('')
@@ -78,15 +86,22 @@ watch(logoAssets, assets => {
 
 const dominantSeed = computed(() => (firstSvgText.value ? dominantColorFromSvg(firstSvgText.value) : null))
 
-const placeholders = {
-  generate: defineComponent({ render: () => h('div', 'GenerateStep placeholder') })
-}
+const configComputed = computed<GeneratorConfig>(() => ({
+  brandName: brandName.value,
+  assets: logoAssets.value,
+  colors: brandColors.value,
+  bwVersion: bwVersion.value,
+  originalVersion: originalVersion.value,
+  jpgMargin: jpgMargin.value
+}))
+
+const tree = computed(() => buildTreePreview(configComputed.value))
 
 const currentStepComponent = computed(() => {
   if (step.value === 0) return BrandStep
   if (step.value === 1) return AssetsStep
   if (step.value === 2) return ColorsStep
-  return placeholders.generate
+  return GenerateStep
 })
 
 const currentStepProps = computed(() => {
@@ -99,7 +114,7 @@ const currentStepProps = computed(() => {
     jpgMargin: jpgMargin.value,
     dominantSeed: dominantSeed.value
   }
-  return {}
+  return { cfg: configComputed.value, tree: tree.value, progress: progress.value, isGenerating: isGenerating.value, done: done.value }
 })
 
 const currentStepEvents = computed(() => {
@@ -130,13 +145,21 @@ function onContinue() {
   step.value++
 }
 
-// Stub — Task 12 wires the real generation pipeline.
-function onGenerate() {
-  done.value = false
+async function onGenerate() {
+  if (!import.meta.client) return
+  errors.value = []
   isGenerating.value = true
-  progress.value = null
-  isGenerating.value = false
-  done.value = true
+  done.value = false
+  progress.value = { step: 0, total: 1, message: 'Starting…' }
+  try {
+    const { zip, fileName } = await generateAssetPack(configComputed.value, p => { progress.value = p })
+    downloadBlob(zip, fileName)
+    done.value = true
+  } catch (e: any) {
+    errors.value = [e?.message ?? 'Generation failed. Please try again.']
+  } finally {
+    isGenerating.value = false
+  }
 }
 </script>
 
