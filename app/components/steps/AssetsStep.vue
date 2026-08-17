@@ -23,7 +23,7 @@
         <div class="font-medium mt-3">{{ dragging ? 'Drop to add files' : 'Drop logo files here' }}</div>
         <div class="text-xs text-muted-foreground mt-1">or click to browse</div>
         <span class="inline-block mt-3 text-[10px] font-mono bg-secondary rounded px-1.5 py-0.5">SVG</span>
-        <input ref="fileInput" type="file" multiple accept=".svg" class="hidden" @change="onChange" />
+        <input ref="fileInput" type="file" multiple accept=".svg" class="hidden" @click.stop @change="onChange" />
       </div>
 
       <p v-if="skipped" class="text-xs text-destructive">{{ skipped }}</p>
@@ -35,7 +35,7 @@
           :asset="asset"
           :index="i"
           @update:type="v => updateAsset(i, { type: v })"
-          @update:custom-name="v => updateAsset(i, { customName: v })"
+          @update:customName="v => updateAsset(i, { customName: v })"
           @remove="removeAsset(i)"
         />
       </div>
