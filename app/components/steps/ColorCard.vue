@@ -108,7 +108,7 @@ import Input from '~/components/ui/Input.vue'
 import Label from '~/components/ui/Label.vue'
 import Switch from '~/components/ui/Switch.vue'
 import CmykEditor from '~/components/steps/CmykEditor.vue'
-import { hexToRgb, rgbToCmyk, isValidHex, textColorOn } from '~/utils/color'
+import { hexToRgb, rgbToHex, rgbToCmyk, isValidHex, textColorOn } from '~/utils/color'
 import type { BrandColor } from '~/utils/generator'
 
 const props = defineProps<{ color: BrandColor; index: number }>()
@@ -131,9 +131,10 @@ function normalizedHex(s: string): string {
 function onHex(v: string) {
   if (!isValidHex(v)) return
   const hex = normalizedHex(v)
-  const next: Partial<BrandColor> = { hex }
+  const { r, g, b } = hexToRgb(hex)
+  const full = rgbToHex(r, g, b)
+  const next: Partial<BrandColor> = { hex: full }
   if (!props.color.cmykManual) {
-    const { r, g, b } = hexToRgb(hex)
     next.cmyk = rgbToCmyk(r, g, b)
   }
   emit('update:color', { ...props.color, ...next })

@@ -99,7 +99,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, toRaw } from 'vue'
+import { ref, computed, toRaw, watch } from 'vue'
 import { Plus, X, Check } from 'lucide-vue-next'
 import Button from '~/components/ui/Button.vue'
 import Input from '~/components/ui/Input.vue'
@@ -137,6 +137,12 @@ function normalizedHex(s: string): string {
 }
 
 const pickerValue = computed(() => (isValidHex(newHex.value) ? normalizedHex(newHex.value) : '#3b82f6'))
+
+watch(newHex, v => {
+  if (newManual.value || !isValidHex(v)) return
+  const { r, g, b } = hexToRgb(normalizedHex(v))
+  newCmyk.value = rgbToCmyk(r, g, b)
+})
 
 function onPicker(e: Event) {
   newHex.value = (e.target as HTMLInputElement).value

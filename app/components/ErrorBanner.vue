@@ -6,7 +6,7 @@
     >
       <AlertTriangle class="w-5 h-5 text-destructive shrink-0 mt-0.5" />
       <ul class="space-y-1 text-sm text-destructive">
-        <li v-for="e in errors" :key="e">{{ e }}</li>
+        <li v-for="(e, i) in errors" :key="i">{{ e }}</li>
       </ul>
     </div>
   </Transition>

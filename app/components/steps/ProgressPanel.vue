@@ -30,5 +30,5 @@ const props = defineProps<{
   done: boolean
 }>()
 
-const percent = computed(() => Math.round((props.progress.step / props.progress.total) * 100))
+const percent = computed(() => Math.round((props.progress.step / (props.progress.total || 1)) * 100))
 </script>

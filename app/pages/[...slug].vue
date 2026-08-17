@@ -12,4 +12,8 @@
 <script setup lang="ts">
 import { House } from 'lucide-vue-next'
 useHead({ title: 'Page Not Found' })
+if (import.meta.server) {
+  const { ssrContext } = useNuxtApp()
+  if (ssrContext) ssrContext.event.node.res.statusCode = 404
+}
 </script>

@@ -7,7 +7,7 @@
         :disabled="!allowed(i)"
         @click="allowed(i) && $emit('go', i)"
       >
-        <Check v-if="i < step || done" class="w-3.5 h-3.5" />
+        <Check v-if="i < step || (done && i <= step)" class="w-3.5 h-3.5" />
         <span>{{ label }}</span>
       </button>
       <ChevronRight v-if="i < labels.length - 1" class="w-4 h-4 text-muted-foreground" />
