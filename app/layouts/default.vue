@@ -11,6 +11,14 @@
             <span class="text-[10px] font-display italic text-muted-foreground">by Khairinkamarizal</span>
           </div>
         </NuxtLink>
+        <a
+          href="https://khair.ink"
+          target="_blank"
+          rel="noopener"
+          class="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium rounded-[3px] border border-foreground/30 text-foreground hover:bg-secondary transition-colors"
+        >
+          khair.ink <ExternalLink class="w-3.5 h-3.5" />
+        </a>
       </div>
     </header>
 
@@ -20,11 +28,12 @@
 
     <footer class="border-t border-border/50 bg-background/60 backdrop-blur-sm">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 text-center text-xs text-muted-foreground">
-        LogoKit — crafted with care by <span class="text-foreground font-medium">Khairinkamarizal</span>
+        LogoKit — crafted with care by <a href="https://khair.ink" target="_blank" rel="noopener" class="text-foreground font-medium hover:underline">Khairinkamarizal</a>
       </div>
     </footer>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ExternalLink } from 'lucide-vue-next'
 </script>
