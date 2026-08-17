@@ -76,7 +76,7 @@
         :model-value="color.cmyk"
         :manual="color.cmykManual"
         @update:model-value="v => patch({ cmyk: v })"
-        @update:manual="v => patch({ cmykManual: v })"
+        @update:manual="onCmykManual"
       />
 
       <div class="space-y-3">
@@ -138,6 +138,15 @@ function onHex(v: string) {
     next.cmyk = rgbToCmyk(r, g, b)
   }
   emit('update:color', { ...props.color, ...next })
+}
+
+function onCmykManual(v: boolean) {
+  if (!v) {
+    const { r, g, b } = hexToRgb(props.color.hex)
+    patch({ cmykManual: false, cmyk: rgbToCmyk(r, g, b) })
+  } else {
+    patch({ cmykManual: true })
+  }
 }
 
 function onPicker(e: Event) {

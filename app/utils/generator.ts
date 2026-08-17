@@ -28,13 +28,32 @@ const yieldUI = () => new Promise(r => setTimeout(r, 0))
 const jpgPairSkipped = (v: VariantInfo, b: { hex: string }): boolean =>
   v.kind === 'color' && !!v.hex && v.hex.toLowerCase() === b.hex
 
+function colorSlugs(cfg: GeneratorConfig): string[] {
+  const usedSlugs = new Set<string>(['original', 'black', 'white'])
+  const slugs: string[] = []
+  let i = 0
+  for (const c of cfg.colors) {
+    if (c.useForLogo === false) continue
+    const fallback = `brand-color-${++i}`
+    const base = slugify(c.name) || fallback
+    let slug = base
+    let n = 2
+    while (usedSlugs.has(slug)) slug = `${base}-${n++}`
+    usedSlugs.add(slug)
+    slugs.push(slug)
+  }
+  return slugs
+}
+
 export function buildVariants(cfg: GeneratorConfig): VariantInfo[] {
   const out: VariantInfo[] = []
+  const slugs = colorSlugs(cfg)
   if (cfg.originalVersion) out.push({ slug: 'original', label: 'Original', kind: 'original' })
+  let i = 0
   for (const c of cfg.colors) {
     if (c.useForLogo === false) continue
     out.push({
-      slug: slugify(c.name) || `brand-color-${out.length}`,
+      slug: slugs[i++],
       label: c.name || `Brand Color ${out.length}`,
       kind: 'color', hex: c.hex,
       cmyk: c.cmyk
@@ -48,10 +67,11 @@ export function buildVariants(cfg: GeneratorConfig): VariantInfo[] {
 }
 
 export function jpgBackgrounds(cfg: GeneratorConfig): { name: string; hex: string }[] {
+  const slugs = colorSlugs(cfg)
   return [
     { name: 'white-bg', hex: '#ffffff' },
     { name: 'black-bg', hex: '#000000' },
-    ...cfg.colors.map(c => ({ name: `${slugify(c.name) || 'brand'}-bg`, hex: c.hex.toLowerCase() }))
+    ...cfg.colors.filter(c => c.useForLogo !== false).map((c, i) => ({ name: `${slugs[i]}-bg`, hex: c.hex.toLowerCase() }))
   ]
 }
 
