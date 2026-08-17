@@ -4,6 +4,9 @@
       <div class="max-w-5xl w-full space-y-6">
         <div class="flex items-center justify-between gap-4 flex-wrap">
           <StepNav :step="step" :can-go-to="canGoTo" :done="done" @go="n => step = n" />
+          <Button v-if="done" variant="outline" @click="onGenerate">
+            <Download class="w-4 h-4" /> Re-download
+          </Button>
         </div>
         <ErrorBanner :errors="errors" />
         <Transition name="step" mode="out-in">
