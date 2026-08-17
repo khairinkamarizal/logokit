@@ -36,14 +36,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineComponent, h } from 'vue'
+import { ref, computed, watch, defineComponent, h } from 'vue'
 import { ArrowRight, Sparkles, Download, Loader2 } from 'lucide-vue-next'
 import Button from '~/components/ui/Button.vue'
 import StepNav from '~/components/stepper/StepNav.vue'
 import SummarySidebar from '~/components/stepper/SummarySidebar.vue'
 import BrandStep from '~/components/steps/BrandStep.vue'
 import AssetsStep from '~/components/steps/AssetsStep.vue'
+import ColorsStep from '~/components/steps/ColorsStep.vue'
 import ErrorBanner from '~/components/ErrorBanner.vue'
+import { dominantColorFromSvg } from '~/utils/color'
 import type { LogoAsset, BrandColor, Progress } from '~/utils/generator'
 
 const step = ref(0)
@@ -60,27 +62,55 @@ const progress = ref<Progress | null>(null)
 
 const canGoTo = (n: number) => n <= step.value
 
+const firstSvgText = ref<string | null>(null)
+
+watch(logoAssets, assets => {
+  const first = assets.find(a => a.file)
+  if (!first?.file || typeof window === 'undefined' || typeof FileReader === 'undefined') {
+    if (!first?.file) firstSvgText.value = null
+    return
+  }
+  const reader = new FileReader()
+  reader.onload = () => { firstSvgText.value = typeof reader.result === 'string' ? reader.result : null }
+  reader.onerror = () => { firstSvgText.value = null }
+  reader.readAsText(first.file)
+}, { deep: true })
+
+const dominantSeed = computed(() => (firstSvgText.value ? dominantColorFromSvg(firstSvgText.value) : null))
+
 const placeholders = {
-  colors: defineComponent({ render: () => h('div', 'ColorsStep placeholder') }),
   generate: defineComponent({ render: () => h('div', 'GenerateStep placeholder') })
 }
 
 const currentStepComponent = computed(() => {
   if (step.value === 0) return BrandStep
   if (step.value === 1) return AssetsStep
-  if (step.value === 2) return placeholders.colors
+  if (step.value === 2) return ColorsStep
   return placeholders.generate
 })
 
 const currentStepProps = computed(() => {
   if (step.value === 0) return { modelValue: brandName.value }
   if (step.value === 1) return { assets: logoAssets.value }
+  if (step.value === 2) return {
+    colors: brandColors.value,
+    bwVersion: bwVersion.value,
+    originalVersion: originalVersion.value,
+    jpgMargin: jpgMargin.value,
+    dominantSeed: dominantSeed.value
+  }
   return {}
 })
 
 const currentStepEvents = computed(() => {
   if (step.value === 0) return { 'update:modelValue': (v: string) => (brandName.value = v) }
   if (step.value === 1) return { 'update:assets': (v: LogoAsset[]) => (logoAssets.value = v) }
+  if (step.value === 2) return {
+    'update:colors': (v: BrandColor[]) => (brandColors.value = v),
+    'update:bwVersion': (v: boolean) => (bwVersion.value = v),
+    'update:originalVersion': (v: boolean) => (originalVersion.value = v),
+    'update:jpgMargin': (v: number) => (jpgMargin.value = v)
+  }
   return {}
 })
 
