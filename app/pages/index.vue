@@ -42,6 +42,7 @@ import Button from '~/components/ui/Button.vue'
 import StepNav from '~/components/stepper/StepNav.vue'
 import SummarySidebar from '~/components/stepper/SummarySidebar.vue'
 import BrandStep from '~/components/steps/BrandStep.vue'
+import AssetsStep from '~/components/steps/AssetsStep.vue'
 import ErrorBanner from '~/components/ErrorBanner.vue'
 import type { LogoAsset, BrandColor, Progress } from '~/utils/generator'
 
@@ -60,25 +61,26 @@ const progress = ref<Progress | null>(null)
 const canGoTo = (n: number) => n <= step.value
 
 const placeholders = {
-  assets: defineComponent({ render: () => h('div', 'AssetsStep placeholder') }),
   colors: defineComponent({ render: () => h('div', 'ColorsStep placeholder') }),
   generate: defineComponent({ render: () => h('div', 'GenerateStep placeholder') })
 }
 
 const currentStepComponent = computed(() => {
   if (step.value === 0) return BrandStep
-  if (step.value === 1) return placeholders.assets
+  if (step.value === 1) return AssetsStep
   if (step.value === 2) return placeholders.colors
   return placeholders.generate
 })
 
 const currentStepProps = computed(() => {
   if (step.value === 0) return { modelValue: brandName.value }
+  if (step.value === 1) return { assets: logoAssets.value }
   return {}
 })
 
 const currentStepEvents = computed(() => {
   if (step.value === 0) return { 'update:modelValue': (v: string) => (brandName.value = v) }
+  if (step.value === 1) return { 'update:assets': (v: LogoAsset[]) => (logoAssets.value = v) }
   return {}
 })
 
