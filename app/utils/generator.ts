@@ -2,7 +2,7 @@ import { parseSvg, embedImages, recolorSvg, svgToText, getDimensions, makePlaceh
 import { canvasToBlob, exportRasters, fileToImage, rasterOutputSizes, renderToCanvas, supportsWebp } from './raster'
 import { svgToEps } from './eps'
 import { buildZip, assetFolderNames, zipFileName, typeLabel } from './zip'
-import { slugify } from './color'
+import { contrastRatio, slugify } from './color'
 
 export type LogoAssetSourceKind = 'svg' | 'raster'
 export interface LogoAsset { id: string; type: string; customName?: string; name: string; file?: File; sourceKind?: LogoAssetSourceKind; width?: number; height?: number }
@@ -39,12 +39,12 @@ function originalExtension(fileName: string): string {
   return fileName.match(RASTER_EXTENSION)?.[1].toLowerCase() ?? 'png'
 }
 
-// JPG same-hex skip rule: a brand-color variant skips the background with the same hex
-// (a logo vanishes into its own brand color). Core black/white variants and the
-// original are rendered on every background (white-bg/black-bg are universal
-// contrast references).
+// Solid-color logos need enough contrast to remain recognizable. Original
+// multicolor and raster artwork cannot be judged accurately from a single hex,
+// so they continue to render on every background.
+const MIN_LOGO_CONTRAST = 3
 const jpgPairSkipped = (v: VariantInfo, b: { hex: string }): boolean =>
-  v.kind === 'color' && !!v.hex && v.hex.toLowerCase() === b.hex
+  !!v.hex && contrastRatio(v.hex, b.hex) < MIN_LOGO_CONTRAST
 
 function colorSlugs(cfg: GeneratorConfig): string[] {
   const usedSlugs = new Set<string>(['original', 'black', 'white'])

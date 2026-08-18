@@ -29,6 +29,19 @@ export function cmykToRgb(c: number, m: number, y: number, k: number) {
 export function relativeLuminance({ r, g, b }: { r: number; g: number; b: number }): number {
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255
 }
+export function contrastRatio(firstHex: string, secondHex: string): number {
+  const luminance = (hex: string) => {
+    const { r, g, b } = hexToRgb(hex)
+    const linear = (channel: number) => {
+      const value = channel / 255
+      return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4
+    }
+    return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b)
+  }
+  const first = luminance(firstHex)
+  const second = luminance(secondHex)
+  return (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05)
+}
 export function textColorOn(hex: string): '#000000' | '#ffffff' {
   return relativeLuminance(hexToRgb(hex)) > 0.5 ? '#000000' : '#ffffff'
 }

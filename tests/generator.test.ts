@@ -41,8 +41,21 @@ describe('generator planning', () => {
     expect(jpgBackgrounds(cfg).map(b => b.name)).toEqual(['white-bg', 'black-bg', 'brand-blue-bg', 'brand-blue-2-bg'])
   })
   it('estimateFileCount math', () => {
-    // 1 asset, 4 variants: svg 4 + png 16 + jpg (4 variants × 3 bgs, minus same-hex skips: brand-blue on brand-blue-bg = 11) + webp 16 + eps 4
-    expect(estimateFileCount(base)).toBe(4 + 16 + 11 + 16 + 4)
+    // Original uses all 3 backgrounds; each solid variant has 2 backgrounds at 3:1+ contrast.
+    expect(estimateFileCount(base)).toBe(4 + 16 + 9 + 16 + 4)
+  })
+  it('excludes low-contrast JPG logo/background pairs', () => {
+    const cfg = {
+      ...base,
+      colors: [
+        base.colors[0],
+        { ...base.colors[0], id: 'c2', name: 'Similar Blue', hex: '#3C83F7' }
+      ]
+    } as unknown as GeneratorConfig
+
+    const names = buildTreePreview(cfg).map(entry => entry.name)
+    expect(names).not.toContain('acme-primary-logo-rgb-brand-blue-similar-blue-bg.jpg')
+    expect(names).toContain('acme-primary-logo-rgb-brand-blue-black-bg.jpg')
   })
   it('buildTreePreview matches zip layout', () => {
     const t = buildTreePreview(base)

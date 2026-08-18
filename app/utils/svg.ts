@@ -56,29 +56,46 @@ export async function embedImages(svgEl: SVGElement): Promise<void> {
     })
   }))
 }
-const SKIP_FILL = /^(none|transparent|url\()/i
+const SKIP_PAINT = /^\s*(none|transparent|url\s*\()/i
+const PAINT_DECLARATION = /(^|[;{])(\s*)(fill|stroke|stop-color)\s*:\s*([^;}]+)/gim
+
+function recolorPaintDeclarations(value: string, hex: string): string {
+  return value.replace(PAINT_DECLARATION, (declaration, prefix, whitespace, property, paint) => {
+    const important = paint.match(/\s*!important\s*$/i)?.[0] ?? ''
+    const paintValue = important ? paint.slice(0, -important.length) : paint
+    if (SKIP_PAINT.test(paintValue)) return declaration
+    return `${prefix}${whitespace}${property}: ${hex}${important}`
+  })
+}
+
 export function recolorSvg(svgEl: SVGElement, hex: string): void {
   const walk = (el: Element) => {
-    if (el.tagName.toLowerCase() === 'stop') {
+    const tag = el.tagName.toLowerCase()
+
+    if (tag === 'style') {
+      el.textContent = recolorPaintDeclarations(el.textContent ?? '', hex)
+      return
+    }
+
+    for (const attribute of ['fill', 'stroke']) {
+      const cur = el.getAttribute(attribute)
+      if (cur !== null && !SKIP_PAINT.test(cur)) el.setAttribute(attribute, hex)
+    }
+
+    if (tag === 'stop') {
       const cur = el.getAttribute('stop-color')
-      if (!cur || !SKIP_FILL.test(cur)) el.setAttribute('stop-color', hex)
+      if (!cur || !SKIP_PAINT.test(cur)) el.setAttribute('stop-color', hex)
     }
-    else {
-      const cur = el.getAttribute('fill')
-      if (cur !== null && SKIP_FILL.test(cur)) {
-        // skip
-      }
-      else if (cur !== null) {
-        el.setAttribute('fill', hex)
-      }
-      const style = el.getAttribute('style')
-      if (style && /fill\s*:/.test(style))
-        el.setAttribute('style', style.replace(/fill\s*:\s*[^;"]+/g, `fill: ${hex}`))
-    }
+
+    const style = el.getAttribute('style')
+    if (style) el.setAttribute('style', recolorPaintDeclarations(style, hex))
+
     for (const child of Array.from(el.children)) walk(child)
   }
-  for (const child of Array.from(svgEl.children)) walk(child)
+
+  walk(svgEl)
   svgEl.setAttribute('fill', hex)
+  svgEl.setAttribute('color', hex)
 }
 export function grayscaleSvg(svgEl: SVGElement): void {
   const style = svgEl.getAttribute('style') ?? ''

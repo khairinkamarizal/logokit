@@ -30,6 +30,33 @@ describe('svg utils', () => {
     expect(svgToText(el)).toContain('fill: #123456')
     expect(el.getAttribute('fill')).toBe('#123456')
   })
+  it('recolors stylesheet paints and stroke-only artwork', () => {
+    const el = parseSvg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+      <style>
+        .filled { fill: #f00; stroke: rgb(0, 0, 0) }
+        .outline { fill: none; stroke: #00f !important }
+        .gradient { fill: url(#paint); }
+        .stop { stop-color: #0f0; }
+      </style>
+      <defs><linearGradient id="paint"><stop class="stop" offset="0" /></linearGradient></defs>
+      <path class="filled" d="M0 0h10v10z" />
+      <path class="outline" d="M0 0h10v10z" />
+      <path class="gradient" d="M0 0h10v10z" />
+      <circle cx="5" cy="5" r="4" stroke="currentColor" fill="transparent" />
+    </svg>`)
+
+    recolorSvg(el, '#123456')
+
+    const css = el.querySelector('style')!.textContent!
+    expect(css).toContain('fill: #123456')
+    expect(css).toContain('stroke: #123456')
+    expect(css).toContain('fill: none')
+    expect(css).toContain('fill: url(#paint)')
+    expect(css).toContain('stop-color: #123456')
+    expect(css).toContain('stroke: #123456 !important')
+    expect(el.querySelector('circle')!.getAttribute('stroke')).toBe('#123456')
+    expect(el.querySelector('circle')!.getAttribute('fill')).toBe('transparent')
+  })
   it('grayscale adds filter', () => {
     const el = parseSvg(SVG)
     grayscaleSvg(el)
