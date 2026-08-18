@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { hexToRgb, rgbToHex, isValidHex, rgbToCmyk, cmykToRgb, relativeLuminance, textColorOn, dominantColorFromSvg, slugify } from '~/utils/color'
+import { hexToRgb, rgbToHex, isValidHex, rgbToCmyk, cmykToRgb, relativeLuminance, contrastRatio, textColorOn, dominantColorFromSvg, slugify } from '~/utils/color'
 
 describe('color utils', () => {
   it('hexToRgb', () => {
@@ -24,6 +24,11 @@ describe('color utils', () => {
   it('luminance + text color', () => {
     expect(textColorOn('#ffffff')).toBe('#000000')
     expect(textColorOn('#000000')).toBe('#ffffff')
+  })
+  it('calculates WCAG contrast ratios', () => {
+    expect(contrastRatio('#000000', '#ffffff')).toBe(21)
+    expect(contrastRatio('#3B82F6', '#ffffff')).toBeGreaterThanOrEqual(3)
+    expect(contrastRatio('#3B82F6', '#3C83F7')).toBeLessThan(3)
   })
   it('dominantColorFromSvg filters noise', () => {
     const svg = `<svg><path fill="#333333"/><path fill="#3B82F6"/><path fill="#3B82F6"/><stop stop-color="#3B82F6"/></svg>`
