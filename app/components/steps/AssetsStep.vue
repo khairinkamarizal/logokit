@@ -2,7 +2,7 @@
   <div class="crop-card bg-card rounded-[2px] border border-border p-6 sm:p-10 space-y-8">
     <div class="space-y-3">
       <h2 class="text-4xl sm:text-5xl font-display font-semibold tracking-tight leading-[1.05]">Upload logo <em class="italic font-medium">files</em></h2>
-      <p class="text-sm text-muted-foreground max-w-md">Upload one or more logo source files. Each file becomes its own complete asset folder in the ZIP.</p>
+      <p class="text-sm text-muted-foreground max-w-md">Upload vector logo sources or rendered logo artwork. Each file becomes its own complete asset folder in the ZIP.</p>
     </div>
     <div class="space-y-4">
       <div class="flex items-center gap-3">
@@ -22,8 +22,10 @@
         </div>
         <div class="font-display font-medium mt-3">{{ dragging ? 'Drop to add files' : 'Drop logo files here' }}</div>
         <div class="text-xs text-muted-foreground mt-1">or click to browse</div>
-        <span class="inline-block mt-3 text-[10px] font-mono bg-secondary rounded-[2px] px-1.5 py-0.5 border border-border">SVG</span>
-        <input ref="fileInput" type="file" multiple accept=".svg" class="hidden" @click.stop @change="onChange" />
+        <div class="flex justify-center gap-1.5 mt-3">
+          <span v-for="format in ['SVG', 'PNG', 'JPG', 'WEBP']" :key="format" class="text-[10px] font-mono bg-secondary rounded-[2px] px-1.5 py-0.5 border border-border">{{ format }}</span>
+        </div>
+        <input ref="fileInput" type="file" multiple accept=".svg,.png,.jpg,.jpeg,.webp" class="hidden" @click.stop @change="onChange" />
       </div>
 
       <p v-if="skipped" class="text-xs text-destructive">{{ skipped }}</p>
@@ -48,6 +50,8 @@ import { ref, watch, onUnmounted } from 'vue'
 import { Upload } from 'lucide-vue-next'
 import Sortable from 'sortablejs'
 import AssetRow from '~/components/steps/AssetRow.vue'
+import { readImageDimensions } from '~/utils/raster'
+import { sourceKindFromFileName } from '~/utils/generator'
 import type { LogoAsset } from '~/utils/generator'
 
 const props = defineProps<{ assets: LogoAsset[] }>()
@@ -75,20 +79,27 @@ function onDrop(e: DragEvent) {
   addFiles(Array.from(e.dataTransfer?.files ?? []))
 }
 
-function addFiles(files: File[]) {
-  const accepted = files.filter(f => f.name.toLowerCase().endsWith('.svg'))
-  const rejected = files.filter(f => !f.name.toLowerCase().endsWith('.svg'))
+async function addFiles(files: File[]) {
+  const accepted = files.filter(f => sourceKindFromFileName(f.name) !== null)
+  const rejected = files.filter(f => sourceKindFromFileName(f.name) === null)
   skipped.value = rejected.length
-    ? `Only clean SVG files without embedded raster images are supported. Skipped: ${rejected.map(f => f.name).join(', ')}`
+    ? `Supported formats are SVG, PNG, JPG and WebP. Skipped: ${rejected.map(f => f.name).join(', ')}`
     : ''
   if (!accepted.length) return
   const next = [...props.assets]
   for (const file of accepted) {
+    const sourceKind = sourceKindFromFileName(file.name)!
+    let dimensions: { width?: number; height?: number } = {}
+    if (sourceKind === 'raster') {
+      try { dimensions = await readImageDimensions(file) } catch { /* generation will show a detailed error */ }
+    }
     next.push({
       id: 'asset_' + Date.now() + Math.random().toString(36).slice(2, 7),
-      type: 'primary_logo',
-      name: file.name.replace(/\.svg$/i, '').replace(/[-_]+/g, ' '),
-      file
+      type: sourceKind === 'raster' ? 'logo_3d' : 'primary_logo',
+      sourceKind,
+      name: file.name.replace(/\.(svg|png|jpe?g|webp)$/i, '').replace(/[-_]+/g, ' '),
+      file,
+      ...dimensions
     })
   }
   emit('update:assets', next)

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildVariants, jpgBackgrounds, estimateFileCount, buildTreePreview } from '~/utils/generator'
+import { buildVariants, jpgBackgrounds, estimateFileCount, buildTreePreview, sourceKindFromFileName } from '~/utils/generator'
 import type { GeneratorConfig } from '~/utils/generator'
 
 const base = {
@@ -50,5 +50,24 @@ describe('generator planning', () => {
     expect(t.some(e => e.name === '01_Primary_Logo' && e.depth === 1)).toBe(true)
     expect(t.some(e => e.name === '01_RGB_Digital' && e.depth === 2)).toBe(true)
     expect(t.some(e => e.name.endsWith('-transparent-4096.png') && e.type === 'file')).toBe(true)
+  })
+  it('plans raster assets without vector, recolor or print exports', () => {
+    const cfg = {
+      ...base,
+      assets: [{ id: 'r1', type: 'logo_3d', name: 'render', sourceKind: 'raster', width: 1600, height: 900 }]
+    } as GeneratorConfig
+    const tree = buildTreePreview(cfg)
+    expect(estimateFileCount(cfg)).toBe(8)
+    expect(tree.some(e => e.name === '01_Original')).toBe(true)
+    expect(tree.some(e => e.name === 'acme-3d-logo-original.png')).toBe(true)
+    expect(tree.some(e => e.name === 'acme-3d-logo-1024.png')).toBe(true)
+    expect(tree.some(e => e.name.includes('2048'))).toBe(false)
+    expect(tree.some(e => e.name.includes('SVG') || e.name.includes('EPS'))).toBe(false)
+  })
+  it('detects supported source formats by file name', () => {
+    expect(sourceKindFromFileName('logo.SVG')).toBe('svg')
+    expect(sourceKindFromFileName('logo.JPEG')).toBe('raster')
+    expect(sourceKindFromFileName('logo.webp')).toBe('raster')
+    expect(sourceKindFromFileName('logo.gif')).toBeNull()
   })
 })

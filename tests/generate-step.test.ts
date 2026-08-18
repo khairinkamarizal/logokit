@@ -21,7 +21,7 @@ describe('generate step', () => {
     expect(w.text()).toContain('Est. Files')
     expect(w.text()).toContain('Digital / RGB')
     expect(w.text()).toContain('Print / CMYK')
-    expect(w.text()).toContain('Color Versions per Asset')
+    expect(w.text()).toContain('Color Versions per Vector Asset')
     expect(w.text()).toContain('Original')
     expect(w.text()).toContain('Black')
     expect(w.text()).toContain('White')

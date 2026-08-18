@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import AssetsStep from '~/components/steps/AssetsStep.vue'
 import AssetRow from '~/components/steps/AssetRow.vue'
@@ -13,11 +13,15 @@ describe('assets step', () => {
     expect(w.text()).toContain('Drop logo files here')
     expect(w.text()).toContain('or click to browse')
   })
-  it('shows skip message for non-svg files', async () => {
+  it('accepts raster artwork and skips unsupported files', async () => {
+    vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue({ width: 3000, height: 2000, close: vi.fn() }))
     const w = mount(AssetsStep, { props: { assets: [] } })
-    await (w.vm as any).addFiles([makeFile('a.svg'), new File(['x'], 'b.png', { type: 'image/png' })])
-    expect(w.text()).toContain('Only clean SVG files without embedded raster images are supported. Skipped: b.png')
-    expect(w.emitted('update:assets')![0][0]).toHaveLength(1)
+    await (w.vm as any).addFiles([makeFile('a.svg'), new File(['x'], 'render.png', { type: 'image/png' }), new File(['x'], 'notes.pdf', { type: 'application/pdf' })])
+    expect(w.text()).toContain('Supported formats are SVG, PNG, JPG and WebP. Skipped: notes.pdf')
+    const assets = w.emitted('update:assets')![0][0] as any[]
+    expect(assets).toHaveLength(2)
+    expect(assets[1]).toMatchObject({ type: 'logo_3d', sourceKind: 'raster', width: 3000, height: 2000 })
+    vi.unstubAllGlobals()
   })
   it('derives asset name from filename', async () => {
     const w = mount(AssetsStep, { props: { assets: [] } })
@@ -25,6 +29,7 @@ describe('assets step', () => {
     const assets = w.emitted('update:assets')![0][0] as any[]
     expect(assets[0].name).toBe('acme main logo')
     expect(assets[0].type).toBe('primary_logo')
+    expect(assets[0].sourceKind).toBe('svg')
   })
   it('AssetRow shows name, badge, size', () => {
     const w = mount(AssetRow, { props: { asset: { id: 'a', type: 'primary_logo', name: 'acme logo', file: makeFile() }, index: 0 } })

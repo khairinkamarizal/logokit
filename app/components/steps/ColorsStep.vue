@@ -11,14 +11,14 @@
           <Switch :model-value="bwVersion" class="mt-0.5" @update:model-value="v => emit('update:bwVersion', v)" />
           <div class="space-y-1">
             <Label>Black &amp; White logo version</Label>
-            <p class="text-xs text-muted-foreground">Generates black and white exports in SVG, PNG, JPG and WebP.</p>
+            <p class="text-xs text-muted-foreground">Generates black and white exports from SVG sources in SVG, PNG, JPG and WebP.</p>
           </div>
         </div>
         <div class="flex items-start gap-3 rounded-[3px] border border-border p-4">
           <Switch :model-value="originalVersion" class="mt-0.5" @update:model-value="v => emit('update:originalVersion', v)" />
           <div class="space-y-1">
             <Label>Original (multicolor) logo</Label>
-            <p class="text-xs text-muted-foreground">Exports the uploaded logo with its original colors across SVG, PNG, JPG, WebP and CMYK print formats.</p>
+            <p class="text-xs text-muted-foreground">Exports SVG sources in their original colors across SVG, PNG, JPG, WebP and CMYK print formats. Rendered artwork is always preserved.</p>
           </div>
         </div>
       </div>

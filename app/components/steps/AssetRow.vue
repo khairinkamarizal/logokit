@@ -57,6 +57,7 @@ const extension = computed(() => {
 
 const badgeClass = computed(() => {
   if (extension.value === 'SVG') return 'bg-emerald-500/10 text-emerald-600'
+  if (['PNG', 'JPG', 'JPEG', 'WEBP'].includes(extension.value)) return 'bg-blue-500/10 text-blue-600'
   if (extension.value === 'EPS') return 'bg-violet-500/10 text-violet-600'
   if (extension.value === 'AI') return 'bg-orange-500/10 text-orange-600'
   return 'bg-secondary text-muted-foreground'

@@ -10,7 +10,7 @@
         <div class="bg-card rounded-[3px] border border-border p-4">
           <p class="font-mono text-[10px] tracking-[.18em] uppercase text-muted-foreground">Logo Assets</p>
           <p class="text-3xl font-display font-semibold mt-1">{{ cfg.assets.length }}</p>
-          <p class="text-xs text-muted-foreground mt-0.5">{{ variants.length }} color versions each</p>
+          <p class="text-xs text-muted-foreground mt-0.5">{{ assetSummary }}</p>
         </div>
         <div class="bg-card rounded-[3px] border border-border p-4">
           <p class="font-mono text-[10px] tracking-[.18em] uppercase text-muted-foreground">Brand Colors</p>
@@ -33,19 +33,19 @@
             <span class="text-[10px] font-mono bg-blue-500/10 text-blue-600 rounded-[2px] px-1.5 py-0.5">JPG</span>
             <span class="text-[10px] font-mono bg-blue-500/10 text-blue-600 rounded-[2px] px-1.5 py-0.5">WebP</span>
           </div>
-          <p class="text-xs text-muted-foreground">SVG • PNG (4 sizes) • JPG (color × background) • WebP</p>
+          <p class="text-xs text-muted-foreground">Vector exports plus original and optimized raster artwork</p>
         </div>
         <div class="bg-violet-500/5 border border-violet-500/20 rounded-[3px] p-4 space-y-2">
           <p class="text-sm font-medium text-violet-600">Print / CMYK</p>
           <div class="flex gap-1.5 flex-wrap">
             <span class="text-[10px] font-mono bg-violet-500/10 text-violet-600 rounded-[2px] px-1.5 py-0.5">EPS</span>
           </div>
-          <p class="text-xs text-muted-foreground">Vector EPS, CMYK (up to 4 variants)</p>
+          <p class="text-xs text-muted-foreground">Vector EPS, CMYK (up to 4 variants; SVG sources only)</p>
         </div>
       </div>
 
       <div class="space-y-2">
-        <p class="text-sm font-medium">Color Versions per Asset</p>
+        <p class="text-sm font-medium">Color Versions per Vector Asset</p>
         <div v-if="variants.length" class="flex flex-wrap gap-2">
           <span v-for="v in variants" :key="v.slug" class="rounded-[3px] px-3 h-7 text-xs font-medium bg-secondary border border-border flex items-center">
             {{ v.label }}
@@ -71,7 +71,7 @@
 import { computed } from 'vue'
 import ZipTreePreview from './ZipTreePreview.vue'
 import ProgressPanel from './ProgressPanel.vue'
-import { buildVariants, estimateFileCount } from '~/utils/generator'
+import { assetSourceKind, buildVariants, estimateFileCount } from '~/utils/generator'
 import type { GeneratorConfig, Progress, ZipEntry } from '~/utils/generator'
 
 const props = defineProps<{
@@ -84,4 +84,9 @@ const props = defineProps<{
 
 const variants = computed(() => buildVariants(props.cfg))
 const recolorCount = computed(() => props.cfg.colors.filter(c => c.useForLogo !== false).length)
+const vectorCount = computed(() => props.cfg.assets.filter(a => assetSourceKind(a) === 'svg').length)
+const rasterCount = computed(() => props.cfg.assets.length - vectorCount.value)
+const assetSummary = computed(() => rasterCount.value
+  ? `${vectorCount.value} vector · ${rasterCount.value} rendered`
+  : `${variants.value.length} color versions each`)
 </script>

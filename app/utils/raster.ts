@@ -9,6 +9,33 @@ export function svgToImage(svgText: string): Promise<HTMLImageElement> {
   })
 }
 
+export function fileToImage(file: File): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    img.onload = () => { URL.revokeObjectURL(url); resolve(img) }
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error(`Failed to read image: ${file.name}`)) }
+    img.src = url
+  })
+}
+
+export async function readImageDimensions(file: File): Promise<{ width: number; height: number }> {
+  if (typeof createImageBitmap === 'function') {
+    const bitmap = await createImageBitmap(file)
+    const dimensions = { width: bitmap.width, height: bitmap.height }
+    bitmap.close()
+    return dimensions
+  }
+  const img = await fileToImage(file)
+  return { width: img.naturalWidth, height: img.naturalHeight }
+}
+
+export function rasterOutputSizes(sourceWidth: number, candidates = [512, 1024, 2048, 4096]): number[] {
+  const width = Math.max(1, Math.round(sourceWidth))
+  const sizes = candidates.filter(size => size <= width)
+  return sizes.length ? sizes : [width]
+}
+
 export function renderToCanvas(img: HTMLImageElement, width: number, height: number, background?: string, marginPct = 0): HTMLCanvasElement {
   const canvas = document.createElement('canvas')
   canvas.width = Math.round(width)

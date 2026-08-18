@@ -1,10 +1,11 @@
 import { parseSvg, embedImages, recolorSvg, svgToText, getDimensions, makePlaceholderSvg, fileToText, hasExternalImages } from './svg'
-import { exportRasters } from './raster'
+import { canvasToBlob, exportRasters, fileToImage, rasterOutputSizes, renderToCanvas, supportsWebp } from './raster'
 import { svgToEps } from './eps'
 import { buildZip, assetFolderNames, zipFileName, typeLabel } from './zip'
 import { slugify } from './color'
 
-export interface LogoAsset { id: string; type: string; customName?: string; name: string; file?: File }
+export type LogoAssetSourceKind = 'svg' | 'raster'
+export interface LogoAsset { id: string; type: string; customName?: string; name: string; file?: File; sourceKind?: LogoAssetSourceKind; width?: number; height?: number }
 export interface BrandColor { id: string; name: string; hex: string; cmyk: { c: number; m: number; y: number; k: number }; cmykManual: boolean; useForLogo: boolean; useAsBackground: boolean; digitalOnly: boolean; printOnly: boolean }
 export interface GeneratorConfig { brandName: string; assets: LogoAsset[]; colors: BrandColor[]; bwVersion: boolean; originalVersion: boolean; jpgMargin: number }
 export interface Progress { step: number; total: number; message: string }
@@ -16,8 +17,27 @@ const PNG_SIZES = [512, 1024, 2048, 4096]
 const JPG_WIDTH = 1024
 const QUALITY = 0.92
 const EPS_VARIANT_LIMIT = 4
+const RASTER_EXTENSION = /\.(png|jpe?g|webp)$/i
 
 const yieldUI = () => new Promise(r => setTimeout(r, 0))
+
+export function sourceKindFromFileName(name: string): LogoAssetSourceKind | null {
+  if (/\.svg$/i.test(name)) return 'svg'
+  if (RASTER_EXTENSION.test(name)) return 'raster'
+  return null
+}
+
+export function assetSourceKind(asset: LogoAsset): LogoAssetSourceKind {
+  return asset.sourceKind ?? sourceKindFromFileName(asset.file?.name ?? asset.name) ?? 'svg'
+}
+
+function rasterSizesFor(asset: LogoAsset): number[] {
+  return rasterOutputSizes(asset.width ?? 4096, PNG_SIZES)
+}
+
+function originalExtension(fileName: string): string {
+  return fileName.match(RASTER_EXTENSION)?.[1].toLowerCase() ?? 'png'
+}
 
 // JPG same-hex skip rule: a brand-color variant skips the background with the same hex
 // (a logo vanishes into its own brand color). Core black/white variants and the
@@ -76,13 +96,20 @@ export function jpgBackgrounds(cfg: GeneratorConfig): { name: string; hex: strin
 export function estimateFileCount(cfg: GeneratorConfig): number {
   const variants = buildVariants(cfg)
   const bgs = jpgBackgrounds(cfg)
-  let perAsset = 0
-  for (const v of variants) {
-    perAsset += 1 + PNG_SIZES.length * 2 // svg + png + webp
-    for (const b of bgs) if (!jpgPairSkipped(v, b)) perAsset += 1
+  let total = 0
+  for (const asset of cfg.assets) {
+    if (assetSourceKind(asset) === 'raster') {
+      const sizes = rasterSizesFor(asset)
+      total += 1 + sizes.length * 2 + bgs.length // original + PNG/WebP sizes + JPG backgrounds
+      continue
+    }
+    for (const v of variants) {
+      total += 1 + PNG_SIZES.length * 2 // svg + png + webp
+      for (const b of bgs) if (!jpgPairSkipped(v, b)) total += 1
+    }
+    total += Math.min(variants.length, EPS_VARIANT_LIMIT)
   }
-  perAsset += Math.min(variants.length, EPS_VARIANT_LIMIT)
-  return perAsset * cfg.assets.length
+  return total
 }
 
 export function buildTreePreview(cfg: GeneratorConfig): ZipEntry[] {
@@ -96,6 +123,18 @@ export function buildTreePreview(cfg: GeneratorConfig): ZipEntry[] {
     const label = typeLabel(asset.type, asset.customName)
     const fileBase = `${brand}-${slugify(label.toLowerCase().replace(/_/g, '-'))}`
     entries.push({ name: folders[i].folder, depth: 1, type: 'folder' })
+    if (assetSourceKind(asset) === 'raster') {
+      const sizes = rasterSizesFor(asset)
+      entries.push({ name: '01_Original', depth: 2, type: 'folder' })
+      entries.push({ name: `${fileBase}-original.${originalExtension(asset.file?.name ?? asset.name)}`, depth: 3, type: 'file' })
+      entries.push({ name: '02_PNG', depth: 2, type: 'folder' })
+      for (const size of sizes) entries.push({ name: `${fileBase}-${size}.png`, depth: 3, type: 'file' })
+      entries.push({ name: '03_JPG', depth: 2, type: 'folder' })
+      for (const bg of bgs) entries.push({ name: `${fileBase}-${bg.name}.jpg`, depth: 3, type: 'file' })
+      entries.push({ name: '04_WEBP', depth: 2, type: 'folder' })
+      for (const size of sizes) entries.push({ name: `${fileBase}-${size}.webp`, depth: 3, type: 'file' })
+      return
+    }
     entries.push({ name: '01_RGB_Digital', depth: 2, type: 'folder' })
     entries.push({ name: '01_SVG', depth: 3, type: 'folder' })
     for (const v of variants) entries.push({ name: `${fileBase}-rgb-${v.slug}.svg`, depth: 4, type: 'file' })
@@ -116,7 +155,7 @@ export async function generateAssetPack(cfg: GeneratorConfig, onProgress: Progre
   const bgs = jpgBackgrounds(cfg)
   const folders = assetFolderNames(cfg.assets)
   const brand = slugify(cfg.brandName)
-  const total = cfg.assets.length * 4 + 2
+  const total = cfg.assets.reduce((sum, asset) => sum + (assetSourceKind(asset) === 'raster' ? 3 : 4), 2)
   let step = 0
   const tick = (message: string) => { onProgress({ step: Math.min(step, total), total, message }); step++ }
   onProgress({ step: 0, total, message: 'Initializing…' })
@@ -128,6 +167,42 @@ export async function generateAssetPack(cfg: GeneratorConfig, onProgress: Progre
     const label = typeLabel(asset.type, asset.customName)
     const fileBase = `${brand}-${slugify(label.toLowerCase().replace(/_/g, '-'))}`
     const folder = `${folders[i].folder}/`
+    if (assetSourceKind(asset) === 'raster') {
+      if (!asset.file) throw new Error(`"${asset.name}" is missing its source image.`)
+      const extension = originalExtension(asset.file.name)
+      files.push({ path: `${folder}01_Original/${fileBase}-original.${extension}`, blob: asset.file })
+
+      const img = await fileToImage(asset.file)
+      const width = img.naturalWidth || asset.width || 1
+      const height = img.naturalHeight || asset.height || 1
+      const ratio = height / width
+      const sizes = rasterOutputSizes(width, PNG_SIZES)
+
+      tick(`${label}: generating PNG exports`)
+      await yieldUI()
+      for (const size of sizes) {
+        const canvas = renderToCanvas(img, size, size * ratio)
+        files.push({ path: `${folder}02_PNG/${fileBase}-${size}.png`, blob: await canvasToBlob(canvas, 'image/png') })
+      }
+
+      tick(`${label}: generating JPG exports`)
+      await yieldUI()
+      const jpgWidth = Math.min(JPG_WIDTH, width)
+      for (const bg of bgs) {
+        const canvas = renderToCanvas(img, jpgWidth, jpgWidth * ratio, bg.hex, cfg.jpgMargin)
+        files.push({ path: `${folder}03_JPG/${fileBase}-${bg.name}.jpg`, blob: await canvasToBlob(canvas, 'image/jpeg', QUALITY) })
+      }
+
+      tick(`${label}: generating WebP exports`)
+      await yieldUI()
+      if (await supportsWebp()) {
+        for (const size of sizes) {
+          const canvas = renderToCanvas(img, size, size * ratio)
+          files.push({ path: `${folder}04_WEBP/${fileBase}-${size}.webp`, blob: await canvasToBlob(canvas, 'image/webp', QUALITY) })
+        }
+      }
+      continue
+    }
     const svgText = asset.file ? await fileToText(asset.file) : makePlaceholderSvg(asset.name)
     let svgEl = parseSvg(svgText)
     try { await embedImages(svgEl) } catch (e: any) {

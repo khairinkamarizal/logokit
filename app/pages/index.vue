@@ -52,7 +52,7 @@ import ColorsStep from '~/components/steps/ColorsStep.vue'
 import GenerateStep from '~/components/steps/GenerateStep.vue'
 import ErrorBanner from '~/components/ErrorBanner.vue'
 import { dominantColorFromSvg } from '~/utils/color'
-import { generateAssetPack, buildTreePreview } from '~/utils/generator'
+import { generateAssetPack, buildTreePreview, assetSourceKind } from '~/utils/generator'
 import { downloadBlob } from '~/utils/zip'
 import type { LogoAsset, BrandColor, Progress, GeneratorConfig } from '~/utils/generator'
 
@@ -73,7 +73,7 @@ const canGoTo = (n: number) => n <= step.value
 const firstSvgText = ref<string | null>(null)
 
 watch(logoAssets, assets => {
-  const first = assets.find(a => a.file)
+  const first = assets.find(a => a.file && assetSourceKind(a) === 'svg')
   if (!first?.file || typeof window === 'undefined' || typeof FileReader === 'undefined') {
     if (!first?.file) firstSvgText.value = null
     return

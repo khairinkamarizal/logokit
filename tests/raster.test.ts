@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeAll } from 'vitest'
-import { renderToCanvas, canvasToBlob } from '~/utils/raster'
+import { renderToCanvas, canvasToBlob, rasterOutputSizes } from '~/utils/raster'
 
 // minimal canvas stub: jsdom canvas returns null for getContext without node-canvas
 beforeAll(() => {
@@ -25,5 +25,9 @@ describe('raster utils', () => {
     const c = document.createElement('canvas')
     const b = await canvasToBlob(c, 'image/png')
     expect(b.type).toBe('image/png')
+  })
+  it('chooses standard raster sizes without upscaling', () => {
+    expect(rasterOutputSizes(3000)).toEqual([512, 1024, 2048])
+    expect(rasterOutputSizes(320)).toEqual([320])
   })
 })
